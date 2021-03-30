@@ -1249,6 +1249,8 @@ buf.write("wo");
 console.log(buf.toString()); // wollo
 ```
 
+**[⬆ back to top](#table-of-contents)**
+
 ## ArrayBuffer
 
 [ArrayBuffer Docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays)
@@ -1260,6 +1262,8 @@ view[0] = 5;
 view[1] = 15;
 console.log(view); //Int32Array { '0': 5, '1': 15 }
 ```
+
+**[⬆ back to top](#table-of-contents)**
 
 ## Callbacks
 
@@ -1291,6 +1295,8 @@ greet(function (data) {
 //John Doe
 ```
 
+**[⬆ back to top](#table-of-contents)**
+
 ## Files
 
 ```javascript
@@ -1314,17 +1320,23 @@ console.log("Done!"); //#2
 
 Here both method first collect all data in buffer and then start processing or return file. so, node use heap for store buffer memory. By using this method we can be end up with many buffers which can be very large in size.
 
+**[⬆ back to top](#table-of-contents)**
+
 #### Error First Callback
 
 Callbacks take en error object as their first parameter.
 The Standard.
 null if no error.
 
+**[⬆ back to top](#table-of-contents)**
+
 ## Abstract Class
 
 A type of constructor, you never work directly with, but inherit from.
 
 We create new custom objects which inherits from the abstract class.
+
+**[⬆ back to top](#table-of-contents)**
 
 ## Streams
 
@@ -1335,6 +1347,8 @@ Under the hood, in nodejs, Stream is an abstract(base) class.
 ![](stream-abstract-class.png)
 
 We work with custom stream. we never touch abstract classes like stream or stream.Readable.
+
+**[⬆ back to top](#table-of-contents)**
 
 #### Chunk
 
@@ -1359,6 +1373,8 @@ readable.on("data", function (chunk) {
   writable.write(chunk);
 });
 ```
+
+**[⬆ back to top](#table-of-contents)**
 
 ## Pipes
 
@@ -1403,6 +1419,8 @@ readable.pipe(writable); // Same as forehead sample
 readable.pipe(gzip).pipe(compressed); // Chain pipes
 ```
 
+**[⬆ back to top](#table-of-contents)**
+
 #### Method chaining
 
 A Method returns an object so we can keep calling more methods.
@@ -1413,6 +1431,8 @@ Note:
 1. Stream minimize the the buffer size we are working with. Therefore, helping the memory that the application is using.
 
 2. Stream helps in speed of things to occur.
+
+**[⬆ back to top](#table-of-contents)**
 
 # 5.HTTP
 
