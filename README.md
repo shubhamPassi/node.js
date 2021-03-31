@@ -87,7 +87,7 @@
     - [HTTP server](#http-server)
     - [Output HTML and Templates](#output-html-and-templates) - [Template](#template)
     - [Streams and Performance](#streams-and-performance) - [API](#api) - [Endpoint](#endpoint)
-    - [Outputting a JSON](#outputting-a-json) - [Serialize](#serialize)
+    - [Outputting a JSON](#outputting-a-json) - [Serialize](#serialize) - [Deserialize](#deserialize)
     - [Routing](#routing)
     </details>
 
@@ -1454,8 +1454,11 @@ A set of rules and format for data being transferred on the web
 #### MIME Type
 
 A standard for specifying the type of the data being sent
-'Multipurpose Internet Mail Extensions'
+
+MIME stands for 'Multipurpose Internet Mail Extensions'
+
 Examples: application/json, text/html, image/jpeg
+Content-Type: application/json
 
 #### http_parser
 
@@ -1515,11 +1518,18 @@ http
 #### API
 
 Application Programing Interface.
-In node's field URLs which accept and send only data via HTTP and TCP/IP
+
+API is a software intermediary that allows two applications to talk to each other.
+
+In node's field URLs which accept and send only data via HTTP and TCP/IP.
+
+API endpoint are used for get some data and this data can be json or xml etc.
 
 #### Endpoint
 
-One URL in a web API
+One URL in a web API.
+
+An endpoint is any device that is physically available during communication.
 
 ## Outputting a JSON
 
@@ -1543,7 +1553,10 @@ http
 
 Translating and object into a format that can be stored or transferred.
 JSON, CSV, XML are popular.
-'Deserialize' is the opposite (converting the format back into an object)
+
+#### Deserialize
+
+'Deserialize' is the opposite of serialize (converting the format back into an object)
 
 ## Routing
 
