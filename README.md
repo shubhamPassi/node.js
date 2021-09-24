@@ -768,7 +768,7 @@
 
   **For Better Understanding of Event Loop working**
   
-  [Reference to this understanging]()
+  [Reference to this understanding](https://medium.com/@vishalkalaskar/we-must-have-come-across-the-terms-callbacks-non-blocking-i-o-and-event-looping-while-927a5e2150c0)
 
   Here is an attempt to explain!
   
