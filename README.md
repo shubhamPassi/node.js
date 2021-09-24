@@ -834,13 +834,13 @@ See below diagram for understanding of Reactor Pattern and the place for Event L
 
   ![](1_X0m82lpBhRONFvRGCRu84w.jpeg)
 
-This is what happens in an application using the reactor pattern:
+  This is what happens in an application using the reactor pattern:
 
-The **application** generates a new **I/O operation** by submitting a request to the **Event De-multiplexer**. The application also specifies a **handler**, which will be invoked when the operation completes. Submitting a new request to the Event **De-multiplexer is a **non-blocking call** and it immediately returns the control back to the application.
+  The **application** generates a new **I/O operation** by submitting a request to the **Event De-multiplexer**. The application also specifies a **handler**, which will be invoked when the operation completes. Submitting a new request to the Event **De-multiplexer is a **non-blocking call** and it immediately returns the control back to the application.
 
-When a set of I/O operations completes, the **Event De-multiplexer** pushes the new events into the **Event Queue**. At this point, the **Event Loop** iterates over the items of the **Event Queue**. For each **event**, the associated **handler is invoked**. The **handler**, which is part of the **application code**, will give back the control to the Event Loop when its execution completes (5a). 
+  When a set of I/O operations completes, the **Event De-multiplexer** pushes the new events into the **Event Queue**. At this point, the **Event Loop** iterates over the items of the **Event Queue**. For each **event**, the associated **handler is invoked**. The **handler**, which is part of the **application code**, will give back the control to the Event Loop when its execution completes (5a). 
 
-However, new asynchronous operations might be requested during the execution of the handler (5b), causing new operations to be inserted in the Event De-multiplexer (1), before the control is given back to the Event Loop. When all the items in the Event Queue are processed, the loop will block again on the Event De-multiplexer which will then trigger another cycle. The asynchronous behavior is now clear. The application expresses the interest to access a resource at one point in time (without blocking) and provides a handler, which will then be invoked at another point in time when the operation completes. This is by far the basics behind asynchronous behavior of Node-JS.
+  However, new asynchronous operations might be requested during the execution of the handler (5b), causing new operations to be inserted in the Event De-multiplexer (1), before the control is given back to the Event Loop. When all the items in the Event Queue are processed, the loop will block again on the Event De-multiplexer which will then trigger another cycle. The asynchronous behavior is now clear. The application expresses the interest to access a resource at one point in time (without blocking) and provides a handler, which will then be invoked at another point in time when the operation completes. This is by far the basics behind asynchronous behavior of Node-JS.
 
   Now let’s see how libuv is composed. The following diagram is from the official libuv docs and describes how different types of I/O have been handled while exposing a generalized API.
 
