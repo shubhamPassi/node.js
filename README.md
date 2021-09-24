@@ -741,7 +741,7 @@
 
   ## Reactor Pattern
 
-  [blog](https://blog.insiderattack.net/event-loop-and-the-big-picture-nodejs-event-loop-part-1-1cb67a182810)
+  [Reference to this understanging](https://blog.insiderattack.net/event-loop-and-the-big-picture-nodejs-event-loop-part-1-1cb67a182810)
 
   NodeJS works in an event-driven model that involves an Event Demultiplexer and an Event Queue. All I/O requests will eventually generate an event of completion/failure or any other trigger, which is called an Event.
 
@@ -765,6 +765,70 @@
   - To govern this entire process while supporting cross-platform I/O, there should be an abstraction layer that encapsulates these inter-platform and intra-platform complexities and expose a generalized API for the upper layers of Node.
 
   - I/O is not the only type of tasks performed on the thread pool. There are some Node.js crypto functions such as crypto.pbkdf2, async versions of crypto.randomBytes,crypto.randomFill and async versions of zlib functions which run on the libuv thread pool because they are highly CPU intensive.
+
+  **For Better Understanding of Event Loop working**
+  
+  [Reference to this understanging]()
+
+  Here is an attempt to explain!
+  
+  What is Event Looping?
+  
+At start, we will go through concepts of Blocking and Non-Blocking executions, then jumping on to the ‘Event Loops by Reactor Pattern’!
+Consider examples like reading a file into the application, or an http request to a third party api’s. There are two ways we can perform these I/O operations:
+Blocking I/O: Where, application will make a function call and pause its execution at this point until the data is received.
+Non-Blocking I/O: Where, application will make a function call, and, without waiting for the results, continue its execution.
+Former is called as ‘Synchronous’, while later is called as Asynchronous’ nature of execution, and NodeJS as you know, is Asynchronous in nature.
+So, despite being single-threaded framework, How NodeJS works asynchronously?Answer is, **Reactor Pattern** – which is at the heart of NodeJS.
+But, what is Event Looping?
+“It is a magical place filled with unicorns and rainbows.“
+To explain this, we will compare two patterns of Event-Driven programming:
+Busy Waiting:
+In which, continuous checks on resources is done to see if data is ready for further processing, – called as Active Polling
+
+```javascript
+resources = [socketA, socketB, pipeA];
+while(!resources.isEmpty()) {
+  for(i=0; i < resources.length; i++) {
+    resource = resources[i];
+
+    // try to load
+    var data = resource.read();
+    if( data === NO_DATA_AVAILABLE)
+    // there is no data to read at the moment
+    continue;
+
+    if( data === RESOURCE_CLOSED )
+    // the resource was closed, remove it from list
+    resources.remove(i);
+    else
+    // some data was received, process it
+    consumeData( data );
+  }
+}
+```
+Though, it is the simple way to implement asynchronous, event-driven behaviour, it’s not efficient. As this process will keep running continuously, it will use the CPU extensively.
+2. **`Reactor Pattern`**:
+Reactor Pattern is made of following:
+**Resources**:
+That are shared by multiple applications for I/O operations, generally slower in executions.
+
+**Synchronous Event De-multiplexer / Event Notifier**:
+This uses Event Loop for blocking on all resources. When a set of I/O operations completes, the Event De-multiplexer pushes the new events into the Event Queue.
+
+**Event Loop and Event Queue**:
+Event Queue queues up the new events occurred along with its event-handler, <event, event-handler> pair.
+
+**Request Handler / Application**:
+This is, generally, the application that provides the handler to be executed for registered events on resources.
+See below diagram for understanding of Reactor Pattern and the place for Event Loop:
+
+  ![](1_X0m82lpBhRONFvRGCRu84w.jpeg)
+
+This is what happens in an application using the reactor pattern:
+
+The application generates a new I/O operation by submitting a request to the Event De-multiplexer. The application also specifies a handler, which will be invoked when the operation completes. Submitting a new request to the Event De-multiplexer is a non-blocking call and it immediately returns the control back to the application.
+When a set of I/O operations completes, the Event De-multiplexer pushes the new events into the Event Queue. At this point, the Event Loop iterates over the items of the Event Queue. For each event, the associated handler is invoked. The handler, which is part of the application code, will give back the control to the Event Loop when its execution completes (5a). However, new asynchronous operations might be requested during the execution of the handler (5b), causing new operations to be inserted in the Event De-multiplexer (1), before the control is given back to the Event Loop. When all the items in the Event Queue are processed, the loop will block again on the Event De-multiplexer which will then trigger another cycle. The asynchronous behavior is now clear. The application expresses the interest to access a resource at one point in time (without blocking) and provides a handler, which will then be invoked at another point in time when the operation completes. This is by far the basics behind asynchronous behavior of Node-JS.
 
   Now let’s see how libuv is composed. The following diagram is from the official libuv docs and describes how different types of I/O have been handled while exposing a generalized API.
 
