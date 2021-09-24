@@ -783,9 +783,11 @@
   Non-Blocking I/O: Where, application will make a function call, and, without waiting for the results, continue its execution.
 Former is called as ‘Synchronous’, while later is called as Asynchronous’ nature of execution, and NodeJS as you know, is Asynchronous in nature.
 So, despite being single-threaded framework, How NodeJS works asynchronously?
+
   Answer is, **Reactor Pattern** – which is at the heart of NodeJS.
 
   But, what is Event Looping?
+  
   “It is a magical place filled with unicorns and rainbows.“
   To explain this, we will compare two patterns of Event-Driven programming:
 
