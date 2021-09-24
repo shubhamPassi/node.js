@@ -808,6 +808,7 @@ while(!resources.isEmpty()) {
 }
 ```
 Though, it is the simple way to implement asynchronous, event-driven behaviour, it’s not efficient. As this process will keep running continuously, it will use the CPU extensively.
+
 2. **`Reactor Pattern`**:
 Reactor Pattern is made of following:
 **Resources**:
