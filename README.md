@@ -741,7 +741,7 @@
 
   ## Reactor Pattern
 
-  [Reference to this understanging](https://blog.insiderattack.net/event-loop-and-the-big-picture-nodejs-event-loop-part-1-1cb67a182810)
+  [Reference to this understanding](https://blog.insiderattack.net/event-loop-and-the-big-picture-nodejs-event-loop-part-1-1cb67a182810)
 
   NodeJS works in an event-driven model that involves an Event Demultiplexer and an Event Queue. All I/O requests will eventually generate an event of completion/failure or any other trigger, which is called an Event.
 
@@ -774,16 +774,22 @@
   
   What is Event Looping?
   
-At start, we will go through concepts of Blocking and Non-Blocking executions, then jumping on to the ‘Event Loops by Reactor Pattern’!
-Consider examples like reading a file into the application, or an http request to a third party api’s. There are two ways we can perform these I/O operations:
-Blocking I/O: Where, application will make a function call and pause its execution at this point until the data is received.
-Non-Blocking I/O: Where, application will make a function call, and, without waiting for the results, continue its execution.
+  At start, we will go through concepts of Blocking and Non-Blocking executions, then jumping on to the ‘Event Loops by Reactor Pattern’!
+
+  Consider examples like reading a file into the application, or an http request to a third party api’s. There are two ways we can perform these I/O operations:
+
+  Blocking I/O: Where, application will make a function call and pause its execution at this point until the data is received.
+
+  Non-Blocking I/O: Where, application will make a function call, and, without waiting for the results, continue its execution.
 Former is called as ‘Synchronous’, while later is called as Asynchronous’ nature of execution, and NodeJS as you know, is Asynchronous in nature.
-So, despite being single-threaded framework, How NodeJS works asynchronously?Answer is, **Reactor Pattern** – which is at the heart of NodeJS.
-But, what is Event Looping?
-“It is a magical place filled with unicorns and rainbows.“
-To explain this, we will compare two patterns of Event-Driven programming:
-Busy Waiting:
+So, despite being single-threaded framework, How NodeJS works asynchronously?
+  Answer is, **Reactor Pattern** – which is at the heart of NodeJS.
+
+  But, what is Event Looping?
+  “It is a magical place filled with unicorns and rainbows.“
+  To explain this, we will compare two patterns of Event-Driven programming:
+
+  1. **`Busy Waiting`**:
 In which, continuous checks on resources is done to see if data is ready for further processing, – called as Active Polling
 
 ```javascript
