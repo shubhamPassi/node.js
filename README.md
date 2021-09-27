@@ -859,19 +859,19 @@ See below diagram for understanding of Reactor Pattern and the place for Event L
 
   There are 4 main types of queues that are processed by the native libuv event loop.
 
-  1. Expired timers and intervals queue — consists of callbacks of expired timers added using setTimeout or interval functions added using setInterval.
+  1. **Expired timers and intervals queue** — consists of callbacks of expired timers added using setTimeout or interval functions added using setInterval.
 
-  2. IO Events Queue — Completed IO events
+  2. **IO Events Queue** — Completed IO events
 
-  3. Immediates Queue — Callbacks added using setImmediate function.
+  3. **Immediates Queue** — Callbacks added using setImmediate function.
 
-  4. Close Handlers Queue— Any close event handlers.
+  4. **Close Handlers Queue** — Any close event handlers.
 
   Besides these 4 main queues, there are additionally 2 interesting queues which I previously mentioned as ‘intermediate queues’ and are processed by Node. **Although these queues are not part of libuv itself but are parts NodeJS.**
 
-  1. Next Ticks Queue — Callbacks added using process.nextTick function.
+  1. **Next Ticks Queue** — Callbacks added using process.nextTick function.
 
-  2. Other Microtasks Queue — Includes other microtasks such as resolved promise callbacks.
+  2. **Other Microtasks Queue** — Includes other microtasks such as resolved promise callbacks.
 
   ![](queues-in-nodejs-and-livuv.png)
 
@@ -883,9 +883,9 @@ See below diagram for understanding of Reactor Pattern and the place for Event L
 
   - Next tick queue is displayed separately from the other four main queues because it is not natively provided by the libuv, but implemented in Node.
 
-  - Before each phase of the event loop (timers queue, IO events queue, immediates queue, close handlers queue are the four main phases), before moving to the phase, Node checks for the nextTick queue for any queued events. If the queue is not empty, Node will start processing the queue immediately until the queue is empty, before moving to the main event loop phase.
+  - Before each phase of the event loop (timers queue, IO events queue, immediates queue, close handlers queue are the four main phases), before moving to the phase, Node checks for the `nextTick` queue for any queued events. If the queue is not empty, Node will start processing the queue immediately **until the queue is empty**, before moving to the main event loop phase.
 
-  - This introduces a new problem. Recursively/Repeatedly adding events to the nextTick queue using process.nextTick function can cause I/O and other queues to starve forever. We can simulate this scenario using the following simple script.
+  - **This introduces a new problem**. Recursively/Repeatedly adding events to the `nextTick` queue using `process.nextTick` function can cause I/O and other queues to starve forever. We can simulate this scenario using the following simple script.
 
   ```javascript
   const fs = require("fs");
@@ -914,7 +914,7 @@ See below diagram for understanding of Reactor Pattern and the place for Event L
   console.log("started");
   ```
 
-  You can see the output is an infinite loop of nextTick callback calls, and the setTimeout, setImmediate and fs.readFile callbacks were never called because any of the ‘omg!…’ messages were printed in the console.
+  You can see the output is an infinite loop of `nextTick` callback calls, and the `setTimeout`, `setImmediate` and `fs.readFile` callbacks were never called because any of the ‘omg!…’ messages were printed in the console.
 
   ```
     started
@@ -932,14 +932,16 @@ See below diagram for understanding of Reactor Pattern and the place for Event L
   process.nextTick call 12
   ....
   ```
+  
+  > Before Node v0.12, there has been a property called process.maxTickDepth which is used as a threshold to the process.nextTick queue length. This could be manually set by the developers so that Node will process no more than maxTickDepth callbacks from the next tick queue at a given point. But this has been removed since Node v0.12 for some reason. Therefore, for newer Node versions, repeatedly adding events to next tick queue is only discouraged.
 
   **[⬆ back to top](#table-of-contents)**
 
   #### Timers queue
 
-  When you add a timer using setTimeout or an interval using setInterval, Node will add the timer to the timers heap, which is a data structure accessed through libuv. At the timers phase of the event loop, Node will check the timers heap for expired timers/intervals and will call their callbacks respectively. If there are more than one timer which were expired (set with the same expiration period), they will be executed in the order they were set.
+  When you add a timer using `setTimeout` or an interval using `setInterval`, Node will add the timer to the timers heap, which is a data structure accessed through libuv. At the timers phase of the event loop, Node will check the timers heap for expired timers/intervals and will call their callbacks respectively. If there are more than one timer which were expired (set with the same expiration period), they will be executed in the order they were set.
 
-  When a timer/interval is set with a specific expiration period, it does not guarantee that the callback will be called exactly after the expiration period. When the timer callback is called depends on the performance of the system (Node has to check the timer for expiration once before executing the callback, which takes some CPU time) as well as currently running processes in the event loop. Rather, the expiration period will guarantee that the timer callback will not be triggered at least for the given expiration time period. We can simulate this using the following simple program.
+  When a timer/interval is set with a specific expiration period, it **does not** guarantee that the callback will be called exactly after the expiration period. When the timer callback is called depends on the performance of the system (Node has to check the timer for expiration once before executing the callback, which takes some CPU time) as well as currently running processes in the event loop. Rather, the expiration period will guarantee that the timer callback will not be triggered at least for the given expiration time period. We can simulate this using the following simple program.
 
   ```javascript
   const start = process.hrtime();
@@ -947,14 +949,11 @@ See below diagram for understanding of Reactor Pattern and the place for Event L
   setTimeout(() => {
     const end = process.hrtime(start);
     console.log(
-      `timeout callback executed after ${end[0]}s and ${
-        end[1] / Math.pow(10, 9)
-      }ms`
-    );
+      `timeout callback executed after ${end[0]}s and ${end[1] / Math.pow(10, 9)}ms`);
   }, 1000);
   ```
-
-  and output is
+  
+Above program will start a timer for 1000ms when the program starts and will log how much time it took to execute the callback. If you run this program multiple times, you will notice that it will print a different result each time and it will never print **timeout callback executed after 1s and 0ms**. You will get something like this instead,
 
   ```
   timeout callback executed after 1s and 0.006058353ms
@@ -963,27 +962,25 @@ See below diagram for understanding of Reactor Pattern and the place for Event L
   ...
   ```
 
-  This nature of the timeouts can cause unexpected and unpredictable results when setTimeout used along with setImmediate which I’ll explain in the next section.
+  This nature of the timeouts can cause unexpected and unpredictable results when `setTimeout` used along with `setImmediate` which I’ll explain in the next section.
 
   **[⬆ back to top](#table-of-contents)**
 
   #### Immediates Queue
 
-  Although the immediates queue is somewhat similar to timeouts on how it behaves, it has some of its own unique characteristics. Unlike timers which we cannot guarantee when its callback gets executed even though the timer expiration period is zero, immediates queue is guaranteed to be processed immediately after the I/O phase of the event loop.
+  Although the immediates queue is somewhat similar to timeouts on how it behaves, it has some of its own unique characteristics. Unlike timers which we cannot guarantee when its callback gets executed even though the timer expiration period is zero, immediates queue is guaranteed to be processed immediately after the I/O phase of the event loop. Adding an event(function) to the immediates queue can be done using `setImmediate` function as follows:
 
   ```javascript
   setImmediate(() => {
     console.log("Hi, this is an immediate");
   });
   ```
-
-  **[⬆ back to top](#table-of-contents)**
+ **[⬆ back to top](#table-of-contents)**
 
   #### setTimeout vs setImmediate
-
-  To understand deeply, just go through the program written below.
-
-  **Program 1**
+  Now, when we look at the event loop diagram at the top of this post, you can see that when the program starts its execution, Node starts processing the timers. And later after processing the I/O, it goes for the immediates queue. Looking at this diagram, we can easily deduce the output of the following program.
+  
+   **Program 1**
 
   ```javascript
   setTimeout(function () {
@@ -993,14 +990,14 @@ See below diagram for understanding of Reactor Pattern and the place for Event L
     console.log("setImmediate");
   });
   ```
+  
+  As you might guess, this program will always print `setTimeout` before `setImmediate` because the expired timer callbacks are processed before immediates. **But the output of this program can never be guaranteed!** If you run this program multiple times, you will get different outputs.
+  
+  This is because of the interesting fact that NodeJS caps the minimum timeout to `1ms` in order to align with **Chrome’s timers cap**. Due to this cap, even if you set a timer to `0ms` delay, the delay is actually overridden and set to `1ms`.
 
-  As you might guess, this program will always print setTimeout before setImmediate because the expired timer callbacks are processed before immediates. But the output of this program can never be guaranteed! If you run this program multiple times, you will get different outputs.
+  At the start of a new iteration of the event loop, NodeJS invokes a system call to get the current clock time. Depending on how busy the CPU is, getting the current clock time may or may not complete within `1ms`. If the clock time is retrieved in less than `1ms`, NodeJS will detect that the timer is not expired, because the timer takes `1ms` to expire. But, if getting the clock time takes more than `1ms`, the timer will be expired by the time the clock time is retrieved. In the case of Node detecting that the timer is not yet expired, Then the event loop will move on to the I/O phase and then to the immediates queue. Then it will see that there is an event in the immediates queue and it will process it. Hence, `setImmediate` preceding the `setTimeout` callback.
 
-  This is because of the interesting fact that NodeJS caps the minimum timeout to 1ms in order to align with Chrome’s timers cap. Due to this cap, even if you set a timer to 0ms delay, the delay is actually overridden and set to 1ms.
-
-  At the start of a new iteration of the event loop, NodeJS invokes a system call to get the current clock time. Depending on how busy the CPU is, getting the current clock time may or may not complete within 1ms. If the clock time is retrieved in less than 1ms, NodeJS will detect that the timer is not expired, because the timer takes 1ms to expire. But, if getting the clock time takes more than 1ms, the timer will be expired by the time the clock time is retrieved. In the case of Node detecting that the timer is not yet expired, Then the event loop will move on to the I/O phase and then to the immediates queue. Then it will see that there is an event in the immediates queue and it will process it. Hence, setImmediate preceding the setTimeout callback.
-
-  However, in the following program, it is guaranteed that the immediate callback will be definitely called before the timer callback.
+  However, in the following program, it is **guaranteed** that the immediate callback will be definitely called before the timer callback.
 
   **Program 2**
 
@@ -1019,7 +1016,7 @@ See below diagram for understanding of Reactor Pattern and the place for Event L
 
   Let’s see the execution flow of the above program.
 
-  - At the start, this program reads the current file asynchronously using fs.readFile function, and it provides a callback to be triggered after the file is read.
+  - At the start, this program reads the current file asynchronously using `fs.readFile` function, and it provides a callback to be triggered after the file is read.
 
   - Then the event loop starts.
 
@@ -1033,7 +1030,8 @@ See below diagram for understanding of Reactor Pattern and the place for Event L
 
   - In the next turn of the event loop, it will see the expired timer and it will execute the timer callback.
 
-  **Tell me how this program will behave?**
+  **Conclusion**
+  So let’s have a look at how these different phases/queues work altogether in the event loop. See the following example.
 
   ```javascript
   setImmediate(() => console.log("this is set immediate 1"));
@@ -1062,8 +1060,18 @@ See below diagram for understanding of Reactor Pattern and the place for Event L
   process.nextTick(() => console.log("this is process.nextTick 4"));
   ```
 
-                  <details>
-                  <summary>Output</summary>
+  After the execution of the above script, the following events are added to the respective event loop queues.
+  
+  - 3 immediates
+  - 5 timer callbacks
+  - 5 next tick callbacks
+
+  Let’s now see the execution flow:
+
+  - When the event loop starts, it will notice the next tick queue and will start processing the next tick callbacks. During the execution of the second next tick callback, a new next tick callback is added to the end of the next tick queue and will be executed at the end of the next tick queue.
+  - Callbacks of the expired timers will be executed. Inside the execution of the second timer callback, an event is added to the next tick queue.
+  - Once callbacks of all the expired timers are executed, the event loop will then see that there is one event in the next tick queue (which was added during the execution of the second timer callback). Then the event loop will execute it.
+  - Since there are no I/O events to be processed, the event loop will move to the immediates phase and will process the immediates queue.
 
   ```
   this is process.nextTick 1
@@ -1081,18 +1089,6 @@ See below diagram for understanding of Reactor Pattern and the place for Event L
   this is set immediate 2
   this is set immediate 3
   ```
-
-                  </details>
-
-                  <details>
-                  <summary>Explaination</summary>
-                  When the event loop starts, it will notice the next tick queue and will start processing the next tick callbacks. During the execution of the second next tick callback, a new next tick callback is added to the end of the next tick queue and will be executed at the end of the next tick queue.
-
-  Callbacks of the expired timers will be executed. Inside the execution of the second timer callback, an event is added to the next tick queue.
-
-  Once callbacks of all the expired timers are executed, the event loop will then see that there is one event in the next tick queue (which was added during the execution of the second timer callback). Then the event loop will execute it.
-  Since there are no I/O events to be processed, the event loop will move to the immediates phase and will process the immediates queue.
-  </details>
 
   **[⬆ back to top](#table-of-contents)**
 
