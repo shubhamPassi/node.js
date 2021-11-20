@@ -679,10 +679,10 @@
   Javascript is synchronous, V8 engine is synchronous
   Node.js is asynchronous
 
-  **Nodejs is separated in two dependencies**
-  
   ![Nodejs overview](lib_uv.png)
-  
+
+  **Nodejs is separated in two dependencies**
+    
   - v8: An open source JS engine created by google. Its main purpose is to execute JS code outside of the browser
 
     - V8 compiles JavaScript directly to native machine code using just-in-time compilation before executing it.
